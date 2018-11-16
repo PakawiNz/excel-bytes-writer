@@ -108,4 +108,4 @@ class ExcelBytesWriter:
         self.col_pointer += span
 
     def render(self):
-        return save_virtual_workbook(self.wb), self.file_name
+        return save_virtual_workbook(self.wb)
