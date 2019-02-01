@@ -2,7 +2,7 @@ import re
 from collections import OrderedDict
 
 from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment, Border, Side, PatternFill
+from openpyxl.styles import Font, Alignment, Border, Side, PatternFill, numbers
 from openpyxl.utils import get_column_letter
 from openpyxl.writer.excel import save_virtual_workbook
 
@@ -55,6 +55,9 @@ styles = OrderedDict((
             bottom=Side(style='thin', color='FF000000'),
         )
     )),
+    ('comma', dict(
+        number_format=numbers.FORMAT_NUMBER_COMMA_SEPARATED1
+    )),
 ))
 
 
@@ -64,14 +67,20 @@ def apply_style(cell, style):
         if re.search(r'\b{}\b'.format(class_key), style):
             class_style = styles[class_key]
             for style_key, style_value in class_style.items():
-                group.setdefault(style_key, {}).update(style_value)
+                if type(style_value) is dict:
+                    group.setdefault(style_key, {}).update(style_value)
+                else:
+                    group[style_key] = style_value
 
     for key, kwargs in group.items():
-        setattr(cell, key, class_mapper[key](**kwargs))
+        if key in class_mapper:
+            setattr(cell, key, class_mapper[key](**kwargs))
+        else:
+            setattr(cell, key, kwargs)
 
 
 class ExcelBytesWriter:
-    def __init__(self, file_name):
+    def __init__(self, file_name=None):
         self.wb = Workbook()
         self.ws = self.wb.active
         self.file_name = file_name
