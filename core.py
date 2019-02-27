@@ -14,6 +14,10 @@ class_mapper = dict(
 )
 
 styles = OrderedDict((
+    ('danger', dict(
+        font=dict(color='FF000000'),
+        fill=dict(fill_type='solid', fgColor='FFFF0000'),
+    )),
     ('red', dict(
         font=dict(color='FF9C0006'),
         fill=dict(fill_type='solid', fgColor='FFFFC7CE'),
