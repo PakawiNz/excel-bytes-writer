@@ -2,6 +2,7 @@ import re
 from collections import OrderedDict
 
 from openpyxl import Workbook
+from openpyxl.cell import WriteOnlyCell
 from openpyxl.styles import Font, Alignment, Border, Side, PatternFill, numbers
 from openpyxl.utils import get_column_letter
 from openpyxl.writer.excel import save_virtual_workbook
@@ -85,7 +86,6 @@ def apply_style(cell, style):
         else:
             setattr(cell, key, kwargs)
 
-
 class ExcelBytesWriter:
     def __init__(self, file_name=None):
         self.wb = Workbook()
@@ -94,7 +94,10 @@ class ExcelBytesWriter:
 
         self.row_pointer = 1
         self.col_pointer = 1
-        self.occupied = []
+
+        self.excel = {}
+        self.max_row = 0
+        self.max_col = 0
 
     def set_col_size(self, col, size):
         self.ws.column_dimensions[get_column_letter(col)].width = size
@@ -104,28 +107,32 @@ class ExcelBytesWriter:
         self.col_pointer = 1
 
     def add_col(self, value='', span=1, style='', rowspan=1):
-        while (self.row_pointer, self.col_pointer) in self.occupied:
+        while (self.row_pointer, self.col_pointer) in self.excel:
             self.col_pointer += 1
 
-        self.ws.cell(
-            row=self.row_pointer,
-            column=self.col_pointer,
-            value=value
-        )
-
-        self.ws.merge_cells(
-            start_row=self.row_pointer,
-            start_column=self.col_pointer,
-            end_row=self.row_pointer + rowspan - 1,
-            end_column=self.col_pointer + span - 1
-        )
+        if span > 1 or rowspan > 1:
+            self.ws.merge_cells(
+                start_row=self.row_pointer,
+                start_column=self.col_pointer,
+                end_row=self.row_pointer + rowspan - 1,
+                end_column=self.col_pointer + span - 1
+            )
 
         for row in range(self.row_pointer, self.row_pointer + rowspan):
             for col in range(self.col_pointer, self.col_pointer + span):
-                self.occupied.append((row, col))
-                style and apply_style(self.ws.cell(row=row, column=col), style)
+                cell = WriteOnlyCell(self.ws, value=value)
+                style and apply_style(cell, style)
+                self.excel[(row, col)] = cell
+                self._keep_maximum_value(row, col)
 
         self.col_pointer += span
 
+    def _keep_maximum_value(self, row, col):
+        self.max_row = max(self.max_row, row)
+        self.max_col = max(self.max_col, col)
+
     def render(self):
+        for row in range(self.max_row):
+            self.ws.append([self.excel.get((row + 1, col + 1)) for col in range(self.max_col)])
+
         return save_virtual_workbook(self.wb)
