@@ -51,6 +51,9 @@ styles = OrderedDict((
     ('left', dict(
         alignment=dict(horizontal='left'),
     )),
+    ('wrap', dict(
+        alignment=dict(wrap_text=True),
+    )),
     ('celled', dict(
         border=dict(
             left=Side(style='thin', color='FF000000'),
