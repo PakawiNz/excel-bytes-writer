@@ -91,6 +91,7 @@ class ExcelBytesWriter:
 
         self.row_pointer = 1
         self.col_pointer = 1
+        self.occupied = []
 
     def set_col_size(self, col, size):
         self.ws.column_dimensions[get_column_letter(col)].width = size
@@ -99,24 +100,27 @@ class ExcelBytesWriter:
         self.row_pointer += 1
         self.col_pointer = 1
 
-    def add_col(self, value='', span=1, style=''):
+    def add_col(self, value='', span=1, style='', rowspan=1):
+        while (self.row_pointer, self.col_pointer) in self.occupied:
+            self.col_pointer += 1
+
         self.ws.cell(
             row=self.row_pointer,
             column=self.col_pointer,
             value=value
         )
 
-        if span > 1:
-            self.ws.merge_cells(
-                start_row=self.row_pointer,
-                start_column=self.col_pointer,
-                end_row=self.row_pointer,
-                end_column=self.col_pointer + span - 1
-            )
+        self.ws.merge_cells(
+            start_row=self.row_pointer,
+            start_column=self.col_pointer,
+            end_row=self.row_pointer + rowspan - 1,
+            end_column=self.col_pointer + span - 1
+        )
 
-        if style:
+        for row in range(self.row_pointer, self.row_pointer + rowspan):
             for col in range(self.col_pointer, self.col_pointer + span):
-                apply_style(self.ws.cell(row=self.row_pointer, column=col), style)
+                self.occupied.append((row, col))
+                style and apply_style(self.ws.cell(row=row, column=col), style)
 
         self.col_pointer += span
 
