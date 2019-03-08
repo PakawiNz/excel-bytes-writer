@@ -1,5 +1,6 @@
-from .core import ExcelBytesWriter
+from .core import ExcelBytesWriter, Column
 
 __all__ = [
     ExcelBytesWriter,
+    Column
 ]

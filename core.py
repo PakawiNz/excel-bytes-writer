@@ -1,5 +1,6 @@
 import re
 from collections import OrderedDict
+from typing import List
 
 from openpyxl import Workbook
 from openpyxl.cell import WriteOnlyCell
@@ -86,6 +87,34 @@ def apply_style(cell, style):
         else:
             setattr(cell, key, kwargs)
 
+
+class Column:
+    def __init__(self, key, name, size, style='', formatter=None, stylish=None):
+        self.key = key
+        self.name = name
+        self.size = size
+        self.style = style
+        self.formatter = formatter
+        self.stylish = stylish
+
+    def write_head(self, writer, index):
+        writer.add_col(self.name, style=self.style + ' bold')
+        writer.set_col_size(index + 1, self.size)
+
+    def write_body(self, writer, row):
+        value = row[self.key]
+        if self.formatter:
+            value = self.formatter(value, row)
+        else:
+            value = str(value)
+
+        style = self.style
+        if self.stylish:
+            style = style + ' ' + self.stylish(value, row)
+
+        writer.add_col(value, style=style)
+
+
 class ExcelBytesWriter:
     def __init__(self, file_name=None):
         self.wb = Workbook()
@@ -136,3 +165,13 @@ class ExcelBytesWriter:
             self.ws.append([self.excel.get((row + 1, col + 1)) for col in range(self.max_col)])
 
         return save_virtual_workbook(self.wb)
+
+    def write_table(self, columns: List[Column], rows: List[dict]):
+        self.add_row()
+        for i, col in enumerate(columns):
+            col.write_head(self, i)
+
+        for row in rows:
+            self.add_row()
+            for col in columns:
+                col.write_body(self, row)
