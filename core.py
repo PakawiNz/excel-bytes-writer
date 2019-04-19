@@ -53,6 +53,15 @@ styles = OrderedDict((
     ('left', dict(
         alignment=dict(horizontal='left'),
     )),
+    ('middle', dict(
+        alignment=dict(vertical='center'),
+    )),
+    ('top', dict(
+        alignment=dict(vertical='top'),
+    )),
+    ('bottom', dict(
+        alignment=dict(vertical='bottom'),
+    )),
     ('wrap', dict(
         alignment=dict(wrap_text=True),
     )),
