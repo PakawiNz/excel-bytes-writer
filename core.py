@@ -33,6 +33,7 @@ styles = OrderedDict((
         fill=dict(fill_type='solid', fgColor='FFC6EFCE'),
     )),
     ('clear', dict(
+        font=dict(color='FF000000'),
         fill=dict(fill_type='solid', fgColor='FFFFFFFF'),
     )),
     ('bold', dict(
