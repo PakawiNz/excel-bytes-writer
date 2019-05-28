@@ -42,6 +42,9 @@ styles = OrderedDict((
     ('italic', dict(
         font=dict(italic=True),
     )),
+    ('strike', dict(
+        font=dict(strike=True),
+    )),
     ('underline', dict(
         font=dict(underline="single"),
     )),
